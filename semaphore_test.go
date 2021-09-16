@@ -28,7 +28,7 @@ func Test_Sem(t *testing.T) {
 	permit.Release()
 
 	// double release, will panic
-	permit.Release()
+	//permit.Release()
 
 	wg.Wait()
 }
