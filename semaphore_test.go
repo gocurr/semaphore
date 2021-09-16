@@ -3,6 +3,7 @@ package semaphore
 import (
 	"fmt"
 	"math/rand"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -10,10 +11,11 @@ import (
 
 func Test_Sem(t *testing.T) {
 	rand.Seed(time.Now().Unix())
-	semPool := New(2)
+
+	semPool := New(runtime.NumCPU())
 	var wg sync.WaitGroup
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 100; i++ {
 		wg.Add(1)
 
 		go func(i int) {
