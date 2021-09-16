@@ -16,11 +16,11 @@ func New(permits int) Semaphore {
 	if permits < 1 {
 		panic(errors.New("permits must be greater than 0"))
 	}
-	pool := make(chan *Permit, permits)
+	semaphore := make(chan *Permit, permits)
 	for i := 0; i < permits; i++ {
-		pool <- &Permit{semaphore: (*Semaphore)(&pool)}
+		semaphore <- &Permit{semaphore: (*Semaphore)(&semaphore)}
 	}
-	return pool
+	return semaphore
 }
 
 func (s Semaphore) Acquire() *Permit {
