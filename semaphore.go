@@ -10,7 +10,7 @@ type Semaphore struct {
 
 func New(size int) SemPool {
 	if size <= 0 {
-		panic(errors.New("negative cannot be a size"))
+		panic(errors.New("negative or 0 cannot be a size"))
 	}
 	pool := make(chan *Semaphore, size)
 	for i := 0; i < size; i++ {
