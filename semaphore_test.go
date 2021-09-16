@@ -1,4 +1,4 @@
-package semaphore
+package gosem
 
 import (
 	"fmt"

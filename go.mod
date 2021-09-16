@@ -1,3 +1,3 @@
 module github.com/gocurr/gosem
 
-go 1.17
+go 1.11
