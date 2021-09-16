@@ -5,64 +5,64 @@ import (
 	"time"
 )
 
-type SemPool chan *Semaphore
+type Semaphore chan *Permit
 
-type Semaphore struct {
-	enabled bool
-	pool    *SemPool
+type Permit struct {
+	canRelease bool
+	pool       *Semaphore
 }
 
-func New(permits int) SemPool {
-	if permits <= 0 {
-		panic(errors.New("negative or 0 cannot be a permits"))
+func New(permits int) Semaphore {
+	if permits < 1 {
+		panic(errors.New("permits must be greater than 0"))
 	}
-	pool := make(chan *Semaphore, permits)
+	pool := make(chan *Permit, permits)
 	for i := 0; i < permits; i++ {
-		pool <- &Semaphore{pool: (*SemPool)(&pool), enabled: true}
+		pool <- &Permit{pool: (*Semaphore)(&pool)}
 	}
 	return pool
 }
 
-func (pool SemPool) Acquire() *Semaphore {
-	semaphore := <-pool
-	semaphore.enable()
+func (s Semaphore) Acquire() *Permit {
+	semaphore := <-s
+	semaphore.releaseAble()
 	return semaphore
 }
 
-func (pool SemPool) TryAcquire() (*Semaphore, error) {
+func (s Semaphore) TryAcquire() (*Permit, error) {
 	select {
-	case semaphore := <-pool:
-		semaphore.enable()
+	case semaphore := <-s:
+		semaphore.releaseAble()
 		return semaphore, nil
 	default:
-		return nil, errors.New("no permits enabled")
+		return nil, errors.New("no permits can release")
 	}
 }
 
-func (pool SemPool) TryAcquireTimeout(timeout time.Duration) (*Semaphore, error) {
+func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 	select {
-	case semaphore := <-pool:
-		semaphore.enable()
+	case semaphore := <-s:
+		semaphore.releaseAble()
 		return semaphore, nil
 	case <-time.After(timeout):
 		return nil, errors.New("timeout")
 	}
 }
 
-func (s *Semaphore) Release() {
+func (p *Permit) Release() {
 	// check state
-	if !s.enabled {
+	if !p.canRelease {
 		panic(errors.New("double release"))
 	}
 
-	s.disable()
-	*s.pool <- s
+	p.releaseDisable()
+	*p.pool <- p
 }
 
-func (s *Semaphore) enable() {
-	s.enabled = true
+func (p *Permit) releaseAble() {
+	p.canRelease = true
 }
 
-func (s *Semaphore) disable() {
-	s.enabled = false
+func (p *Permit) releaseDisable() {
+	p.canRelease = false
 }

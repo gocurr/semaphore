@@ -8,24 +8,24 @@ import (
 )
 
 func Test_Sem(t *testing.T) {
-	pool := New(1)
-	semaphore := pool.Acquire()
+	semaphore := New(1)
+	permit := semaphore.Acquire()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go func() {
-		log.Info("begin of TryAcquireTimeout")
-		sem := pool.Acquire()
-		log.Info("end of TryAcquireTimeout")
+		log.Info("begin of Acquire")
+		p := semaphore.Acquire()
+		log.Info("end of Acquire")
 
 		log.Infof("Acquired")
-		sem.Release()
+		p.Release()
 		wg.Done()
 	}()
 
 	time.Sleep(5 * time.Second)
-	semaphore.Release()
+	permit.Release()
 
 	// double release, will panic
 	//semaphore.Release()
@@ -34,16 +34,16 @@ func Test_Sem(t *testing.T) {
 }
 
 func Test_Sem_TryAcquire(t *testing.T) {
-	pool := New(1)
-	semaphore := pool.Acquire()
+	semaphore := New(1)
+	permit := semaphore.Acquire()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go func() {
-		log.Info("begin of TryAcquireTimeout")
-		sem, err := pool.TryAcquire()
-		log.Info("end of TryAcquireTimeout")
+		log.Info("begin of TryAcquire")
+		p, err := semaphore.TryAcquire()
+		log.Info("end of TryAcquire")
 		if err != nil {
 			log.Errorf("%v", err)
 			wg.Done()
@@ -51,26 +51,26 @@ func Test_Sem_TryAcquire(t *testing.T) {
 		}
 
 		log.Infof("Acquired")
-		sem.Release()
+		p.Release()
 		wg.Done()
 	}()
 
 	time.Sleep(1 * time.Second)
-	semaphore.Release()
+	permit.Release()
 
 	wg.Wait()
 }
 
 func Test_timeout(t *testing.T) {
-	pool := New(1)
-	semaphore := pool.Acquire()
+	semaphore := New(1)
+	permit := semaphore.Acquire()
 
 	var wg sync.WaitGroup
 	wg.Add(1)
 
 	go func() {
 		log.Info("begin of TryAcquireTimeout")
-		sem, err := pool.TryAcquireTimeout(10 * time.Second)
+		p, err := semaphore.TryAcquireTimeout(10 * time.Second)
 		log.Info("end of TryAcquireTimeout")
 		if err != nil {
 			log.Errorf("%v", err)
@@ -79,12 +79,12 @@ func Test_timeout(t *testing.T) {
 		}
 
 		log.Infof("Acquired")
-		sem.Release()
+		p.Release()
 		wg.Done()
 	}()
 
 	time.Sleep(15 * time.Second)
-	semaphore.Release()
+	permit.Release()
 
 	wg.Wait()
 }
