@@ -1,15 +1,15 @@
-# semaphore
+# gosem
 
 To download, run:
 
 ```bash
-go get -u github.com/gocurr/semaphore
+go get -u github.com/gocurr/gosem
 ```
 
 Import it in your program as:
 
 ```go
-import "github.com/gocurr/semaphore"
+import "github.com/gocurr/gosem"
 ```
 
 It requires Go 1.11 or later due to usage of Go Modules.
@@ -19,7 +19,7 @@ It requires Go 1.11 or later due to usage of Go Modules.
 ```go
 rand.Seed(time.Now().Unix())
 
-semPool := New(runtime.NumCPU())
+semPool := gosem.New(runtime.NumCPU())
 var wg sync.WaitGroup
 
 for i := 0; i < 100; i++ {

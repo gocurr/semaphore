@@ -1,3 +1,3 @@
-module github.com/gocurr/semaphore
+module github.com/gocurr/gosem
 
 go 1.17
