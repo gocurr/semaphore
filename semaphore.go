@@ -9,7 +9,7 @@ type Semaphore chan *Permit
 
 type Permit struct {
 	canRelease bool
-	pool       *Semaphore
+	semaphore  *Semaphore
 }
 
 func New(permits int) Semaphore {
@@ -18,7 +18,7 @@ func New(permits int) Semaphore {
 	}
 	pool := make(chan *Permit, permits)
 	for i := 0; i < permits; i++ {
-		pool <- &Permit{pool: (*Semaphore)(&pool)}
+		pool <- &Permit{semaphore: (*Semaphore)(&pool)}
 	}
 	return pool
 }
@@ -56,7 +56,7 @@ func (p *Permit) Release() {
 	}
 
 	p.releaseDisable()
-	*p.pool <- p
+	*p.semaphore <- p
 }
 
 func (p *Permit) releaseAble() {
