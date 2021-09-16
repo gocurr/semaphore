@@ -36,18 +36,12 @@ func (s SemPool) TryAcquire() (*Semaphore, error) {
 }
 
 func (s SemPool) TryAcquireTimeout(timeout time.Duration) (*Semaphore, error) {
-	for {
-		select {
-		case ret := <-s:
-			return ret, nil
-		case <-time.After(timeout):
-			return nil, errors.New("timeout")
-		}
+	select {
+	case ret := <-s:
+		return ret, nil
+	case <-time.After(timeout):
+		return nil, errors.New("timeout")
 	}
-}
-
-func (s SemPool) Available() int {
-	return len(s)
 }
 
 func (s *Semaphore) Release() {

@@ -36,23 +36,21 @@ func Test_Sem_TryAcquire(t *testing.T) {
 	rand.Seed(time.Now().Unix())
 
 	semPool := New(runtime.NumCPU())
-	fmt.Printf("begin: %d\n", semPool.Available())
 
 	var wg sync.WaitGroup
 
-	for i := 0; i < 100; i++ {
+	for i := 0; i < 80; i++ {
 		wg.Add(1)
 
 		go func(i int) {
-			semaphore, err := semPool.TryAcquireTimeout(2 * time.Second)
+			semaphore, err := semPool.TryAcquireTimeout(9 * time.Second)
 			if err != nil {
-				available := semPool.Available()
-				fmt.Printf("semaphore is nil, available %d\n", available)
+				fmt.Printf("semaphore is nil\n")
 				wg.Done()
 				return
 			}
 			// mock slow operation
-			n := rand.Intn(5)
+			n := rand.Intn(3)
 			time.Sleep(time.Duration(n) * time.Second)
 			fmt.Printf("%d released\n", i)
 			semaphore.Release()
@@ -61,4 +59,16 @@ func Test_Sem_TryAcquire(t *testing.T) {
 	}
 
 	wg.Wait()
+}
+
+func Test_timeout(t *testing.T) {
+	pool := New(2)
+	_ = pool.Acquire()
+	_ = pool.Acquire()
+	_, err := pool.TryAcquireTimeout(2 * time.Second)
+	if err != nil {
+		t.Errorf("%v", err)
+	}
+
+	time.Sleep(10 * time.Second)
 }
