@@ -1,4 +1,4 @@
-module github.com/gocurr/gosem
+module github.com/gocurr/semaphore
 
 go 1.11
 

@@ -1,4 +1,4 @@
-package gosem
+package semaphore
 
 import (
 	"errors"

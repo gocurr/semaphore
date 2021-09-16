@@ -1,15 +1,15 @@
-# gosem
+# semaphore
 
 To download, run:
 
 ```bash
-go get -u github.com/gocurr/gosem
+go get -u github.com/gocurr/semaphore
 ```
 
 Import it in your program as:
 
 ```go
-import "github.com/gocurr/gosem"
+import "github.com/gocurr/semaphore"
 ```
 
 It requires Go 1.11 or later due to usage of Go Modules.
@@ -17,7 +17,7 @@ It requires Go 1.11 or later due to usage of Go Modules.
 - Acquire:
 
 ```go
-semaphore := gosem.New(1)
+semaphore := semaphore.New(1)
 permit := semaphore.Acquire()
 
 var wg sync.WaitGroup
@@ -45,7 +45,7 @@ wg.Wait()
 - TryAcquire:
 
 ```go
-semaphore := gosem.New(1)
+semaphore := semaphore.New(1)
 permit := semaphore.Acquire()
 
 var wg sync.WaitGroup
@@ -75,7 +75,7 @@ wg.Wait()
 - TryAcquireTimeout:
 
 ```go
-semaphore := gosem.New(1)
+semaphore := semaphore.New(1)
 permit := semaphore.Acquire()
 
 var wg sync.WaitGroup
