@@ -8,8 +8,8 @@ import (
 type Semaphore chan *Permit
 
 type Permit struct {
-	releaseable bool
-	semaphore   *Semaphore
+	releasable bool
+	semaphore  Semaphore
 }
 
 func New(permits int) Semaphore {
@@ -18,21 +18,21 @@ func New(permits int) Semaphore {
 	}
 	semaphore := make(chan *Permit, permits)
 	for i := 0; i < permits; i++ {
-		semaphore <- &Permit{semaphore: (*Semaphore)(&semaphore)}
+		semaphore <- &Permit{semaphore: semaphore}
 	}
 	return semaphore
 }
 
 func (s Semaphore) Acquire() *Permit {
 	p := <-s
-	p.releaseable = true
+	p.releasable = true
 	return p
 }
 
 func (s Semaphore) TryAcquire() (*Permit, error) {
 	select {
 	case p := <-s:
-		p.releaseable = true
+		p.releasable = true
 		return p, nil
 	default:
 		return nil, errors.New("no permits can release")
@@ -42,7 +42,7 @@ func (s Semaphore) TryAcquire() (*Permit, error) {
 func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 	select {
 	case p := <-s:
-		p.releaseable = true
+		p.releasable = true
 		return p, nil
 	case <-time.After(timeout):
 		return nil, errors.New("timeout")
@@ -51,10 +51,10 @@ func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 
 func (p *Permit) Release() {
 	// check state
-	if !p.releaseable {
+	if !p.releasable {
 		panic(errors.New("double release"))
 	}
 
-	p.releaseable = false
-	*p.semaphore <- p
+	p.releasable = false
+	p.semaphore <- p
 }
