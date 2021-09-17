@@ -50,7 +50,7 @@ func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 }
 
 func (p *Permit) Release() {
-	// check state
+	// check status
 	if !p.releasable {
 		panic(errors.New("double release"))
 	}
