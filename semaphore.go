@@ -58,3 +58,7 @@ func (p *Permit) Release() {
 	p.releasable = false
 	p.semaphore <- p
 }
+
+func (s Semaphore) Avails() int {
+	return len(s)
+}

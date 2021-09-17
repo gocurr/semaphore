@@ -63,7 +63,9 @@ func Test_Sem_TryAcquire(t *testing.T) {
 
 func Test_timeout(t *testing.T) {
 	semaphore := New(1)
+	log.Infof("avails: %d", semaphore.Avails())
 	permit := semaphore.Acquire()
+	log.Infof("avails: %d", semaphore.Avails())
 
 	var wg sync.WaitGroup
 	wg.Add(1)
@@ -83,7 +85,7 @@ func Test_timeout(t *testing.T) {
 		wg.Done()
 	}()
 
-	time.Sleep(15 * time.Second)
+	time.Sleep(2 * time.Second)
 	permit.Release()
 
 	wg.Wait()
