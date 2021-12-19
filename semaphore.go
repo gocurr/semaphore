@@ -5,13 +5,6 @@ import (
 	"time"
 )
 
-var (
-	lessThanOneErr   = errors.New("permits must be greater than 0")
-	noPermitsErr     = errors.New("no permits can be released")
-	timeoutErr       = errors.New("try to acquire timeout")
-	doubleReleaseErr = errors.New("double release")
-)
-
 type Semaphore chan *Permit
 
 type Permit struct {
@@ -21,7 +14,7 @@ type Permit struct {
 
 func New(permits int) Semaphore {
 	if permits < 1 {
-		panic(lessThanOneErr)
+		panic("permits must be greater than 0")
 	}
 	semaphore := make(chan *Permit, permits)
 	for i := 0; i < permits; i++ {
@@ -42,7 +35,7 @@ func (s Semaphore) TryAcquire() (*Permit, error) {
 		p.releasable = true
 		return p, nil
 	default:
-		return nil, noPermitsErr
+		return nil, errors.New("no permits can be released")
 	}
 }
 
@@ -52,13 +45,13 @@ func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 		p.releasable = true
 		return p, nil
 	case <-time.After(timeout):
-		return nil, timeoutErr
+		return nil, errors.New("try to acquire timeout")
 	}
 }
 
 func (p *Permit) Release() {
 	if !p.releasable {
-		panic(doubleReleaseErr)
+		panic("double release")
 	}
 
 	p.releasable = false
