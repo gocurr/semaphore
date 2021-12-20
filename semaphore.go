@@ -8,8 +8,7 @@ import (
 type Semaphore chan *Permit
 
 type Permit struct {
-	releasable bool
-	semaphore  Semaphore
+	semaphore Semaphore
 }
 
 func New(permits int) Semaphore {
@@ -24,15 +23,12 @@ func New(permits int) Semaphore {
 }
 
 func (s Semaphore) Acquire() *Permit {
-	p := <-s
-	p.releasable = true
-	return p
+	return <-s
 }
 
 func (s Semaphore) TryAcquire() (*Permit, error) {
 	select {
 	case p := <-s:
-		p.releasable = true
 		return p, nil
 	default:
 		return nil, errors.New("no permits can be released")
@@ -42,7 +38,6 @@ func (s Semaphore) TryAcquire() (*Permit, error) {
 func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 	select {
 	case p := <-s:
-		p.releasable = true
 		return p, nil
 	case <-time.After(timeout):
 		return nil, errors.New("try to acquire timeout")
@@ -50,12 +45,13 @@ func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 }
 
 func (p *Permit) Release() {
-	if !p.releasable {
+	if p.semaphore == nil {
 		panic("double release")
 	}
-
-	p.releasable = false
-	p.semaphore <- p
+	// push a new Permit to channel
+	p.semaphore <- &Permit{semaphore: p.semaphore}
+	// evict the old one
+	p.semaphore = nil
 }
 
 func (s Semaphore) Avails() int {

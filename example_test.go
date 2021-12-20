@@ -74,7 +74,7 @@ func ExampleSemaphore_TryAcquireTimeout() {
 	wg.Add(1)
 
 	go func() {
-		p, err := s.TryAcquireTimeout(1 * time.Second)
+		p, err := s.TryAcquireTimeout(3 * time.Second)
 		if err != nil {
 			fmt.Println("goroutine cannot acquire")
 			wg.Done()
@@ -91,6 +91,6 @@ func ExampleSemaphore_TryAcquireTimeout() {
 
 	wg.Wait()
 
-	// Output: goroutine cannot acquire
+	// Output: goroutine Acquired
 
 }
