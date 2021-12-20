@@ -2,12 +2,14 @@ package semaphore
 
 import (
 	"errors"
+	"sync"
 	"time"
 )
 
 type Semaphore chan *Permit
 
 type Permit struct {
+	once      sync.Once // the only chance to release
 	semaphore Semaphore
 }
 
@@ -45,14 +47,11 @@ func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 }
 
 func (p *Permit) Release() {
-	if p.semaphore == nil {
-		// don't panic
-		return
-	}
-	// push a new Permit to channel
-	p.semaphore <- &Permit{semaphore: p.semaphore}
-	// evict the old one
-	p.semaphore = nil
+	// release only once
+	p.once.Do(func() {
+		// push a new Permit to channel
+		p.semaphore <- &Permit{semaphore: p.semaphore}
+	})
 }
 
 func (s Semaphore) Avails() int {
