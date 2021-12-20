@@ -46,7 +46,8 @@ func (s Semaphore) TryAcquireTimeout(timeout time.Duration) (*Permit, error) {
 
 func (p *Permit) Release() {
 	if p.semaphore == nil {
-		panic("double release")
+		// don't panic
+		return
 	}
 	// push a new Permit to channel
 	p.semaphore <- &Permit{semaphore: p.semaphore}
