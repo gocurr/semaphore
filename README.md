@@ -1,4 +1,4 @@
-# semaphore
+# Semaphore in Go
 
 To download, run:
 
@@ -14,90 +14,103 @@ import "github.com/gocurr/semaphore"
 
 It requires Go 1.11 or later due to usage of Go Modules.
 
-- Acquire:
+Usages:
 
 ```go
-sem := semaphore.New(1)
-permit := sem.Acquire()
+package semaphore_test
 
-var wg sync.WaitGroup
-wg.Add(1)
+import (
+	"fmt"
+	"github.com/gocurr/semaphore"
+	"sync"
+	"time"
+)
 
-go func() {
-    log.Info("begin of Acquire")
-    p := sem.Acquire()
-    log.Info("end of Acquire")
-    
-    log.Infof("Acquired")
-    p.Release()
-    wg.Done()
-}()
+func ExampleSemaphore_Acquire() {
+	s := semaphore.New(1)
+	permit := s.Acquire()
 
-time.Sleep(5 * time.Second)
-permit.Release()
+	var wg sync.WaitGroup
+	wg.Add(1)
 
-// double release, will panic
-//sem.Release()
+	go func() {
+		p := s.Acquire()
+		fmt.Println("goroutine acquired")
 
-wg.Wait()
-```
+		time.Sleep(1 * time.Second)
+		fmt.Println("goroutine is releasing")
+		p.Release()
+		wg.Done()
+	}()
 
-- TryAcquire:
+	time.Sleep(1 * time.Second)
+	fmt.Println("main is releasing")
+	permit.Release()
 
-```go
-sem := semaphore.New(1)
-permit := sem.Acquire()
+	s.Acquire().Release()
+	fmt.Println("main acquired")
+	wg.Wait()
 
-var wg sync.WaitGroup
-wg.Add(1)
+	// Output: main is releasing
+	// goroutine acquired
+	// goroutine is releasing
+	// main acquired
+}
 
-go func() {
-    log.Info("begin of TryAcquire")
-    p, err := sem.TryAcquire()
-    log.Info("end of TryAcquire")
-    if err != nil {
-        log.Errorf("%v", err)
-        wg.Done()
-        return
-    }
+func ExampleSemaphore_TryAcquire() {
+	s := semaphore.New(1)
+	permit := s.Acquire()
 
-    log.Infof("Acquired")
-    p.Release()
-    wg.Done()
-}()
+	var wg sync.WaitGroup
+	wg.Add(1)
 
-time.Sleep(1 * time.Second)
-permit.Release()
+	go func() {
+		p, err := s.TryAcquire()
+		if err != nil {
+			fmt.Println("cannot acquire")
+			wg.Done()
+			return
+		}
 
-wg.Wait()
-```
+		fmt.Println("goroutine is releasing")
+		p.Release()
+		wg.Done()
+	}()
 
-- TryAcquireTimeout:
+	time.Sleep(1 * time.Second)
+	permit.Release()
 
-```go
-sem := semaphore.New(1)
-permit := sem.Acquire()
+	wg.Wait()
 
-var wg sync.WaitGroup
-wg.Add(1)
+	// Output: cannot acquire
+}
 
-go func() {
-    log.Info("begin of TryAcquireTimeout")
-    p, err := sem.TryAcquireTimeout(10 * time.Second)
-    log.Info("end of TryAcquireTimeout")
-    if err != nil {
-        log.Errorf("%v", err)
-        wg.Done()
-        return
-    }
-    
-    log.Infof("Acquired")
-    p.Release()
-    wg.Done()
-}()
+func ExampleSemaphore_TryAcquireTimeout() {
+	s := semaphore.New(1)
+	permit := s.Acquire()
 
-time.Sleep(15 * time.Second)
-permit.Release()
+	var wg sync.WaitGroup
+	wg.Add(1)
 
-wg.Wait()
+	go func() {
+		p, err := s.TryAcquireTimeout(3 * time.Second)
+		if err != nil {
+			fmt.Println("goroutine cannot acquire")
+			wg.Done()
+			return
+		}
+
+		fmt.Println("goroutine Acquired")
+		p.Release()
+		wg.Done()
+	}()
+
+	time.Sleep(2 * time.Second)
+	permit.Release()
+
+	wg.Wait()
+
+	// Output: goroutine Acquired
+
+}
 ```
